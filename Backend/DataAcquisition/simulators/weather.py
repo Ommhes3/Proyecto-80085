@@ -6,13 +6,51 @@ from sklearn.linear_model import LinearRegression
 
 
 class WeatherSimulator:
-    def __init__(self):
-        self.dataset_path = self.download_dataset()
-        self.data = self.load_dataset()
-        self.normal_data = self.get_normal_rows()
-        self.synthetic_data = self.generate_synthetic_weather_data(target_size=5000)
+    def __init__(self, target_size: int = 5000):
+        self.base_dir = Path(__file__).resolve().parents[1]
+        self.data_dir = self.base_dir / "data"
+        self.synthetic_path = self.data_dir / "weather_synthetic.csv"
+
+        self.data_dir.mkdir(parents=True, exist_ok=True)
+
+        self.target_size = target_size
+        self.synthetic_data = self.load_or_create_synthetic_dataset()
+
+    def load_or_create_synthetic_dataset(self):
+        """
+        Carga el dataset sintético si ya existe.
+        Si no existe, lo genera una sola vez y lo guarda en la carpeta data.
+        """
+
+        if self.synthetic_path.exists():
+            print(f"Dataset sintético cargado desde: {self.synthetic_path}")
+            df = pd.read_csv(self.synthetic_path)
+
+            if df.empty:
+                raise ValueError("El dataset sintético existe, pero está vacío")
+
+            return df
+
+        print("No existe dataset sintético. Generando por primera vez...")
+
+        dataset_path = self.download_dataset()
+        original_data = self.load_dataset(dataset_path)
+        normal_data = self.get_normal_rows(original_data)
+        synthetic_data = self.generate_synthetic_weather_data(
+            normal_data,
+            target_size=self.target_size
+        )
+
+        synthetic_data.to_csv(self.synthetic_path, index=False)
+        print(f"Dataset sintético guardado en: {self.synthetic_path}")
+
+        return synthetic_data
 
     def download_dataset(self):
+        """
+        Descarga el dataset desde KaggleHub y retorna la ruta del archivo CSV.
+        """
+
         dataset_folder = Path(
             kagglehub.dataset_download("rajeev86/soil-climate-data")
         )
@@ -20,31 +58,34 @@ class WeatherSimulator:
         csv_files = list(dataset_folder.glob("*.csv"))
 
         if not csv_files:
-            raise FileNotFoundError("No se encontró ningún archivo CSV en el dataset descargado")
+            raise FileNotFoundError(
+                "No se encontró ningún archivo CSV en el dataset descargado"
+            )
 
         return csv_files[0]
 
-    def load_dataset(self):
-        df = pd.read_csv(self.dataset_path)
+    def load_dataset(self, dataset_path):
+        """
+        Carga el dataset original en un DataFrame.
+        """
+
+        df = pd.read_csv(dataset_path)
 
         if df.empty:
-            raise ValueError("El dataset está vacío")
+            raise ValueError("El dataset original está vacío")
 
         return df
 
-    def get_normal_rows(self):
+    def get_normal_rows(self, df):
         """
-        Filtra los datos normales usando la intersección de condiciones favorables
-        para arroz y caña de azúcar.
+        Filtra datos normales usando condiciones favorables para arroz y caña.
 
-        Intersección:
+        Rangos usados:
         - Temperatura: 20 - 30 °C
         - Humedad: 60 - 90 %
+        - Rainfall: 200 - 1500
         - pH suelo: 5.5 - 7.0
-        - Rainfall: 200 - 1500 según escala del dataset
         """
-
-        df = self.data
 
         normal_rows = df[
             (df["Temperature"] >= 20) &
@@ -62,23 +103,21 @@ class WeatherSimulator:
                 "No se encontraron datos normales usando la intersección de arroz y caña"
             )
 
+        print(f"Muestra normal encontrada: {len(normal_rows)} registros")
+
         return normal_rows
 
-    def generate_synthetic_weather_data(self, target_size=5000):
+    def generate_synthetic_weather_data(self, normal_data, target_size=5000):
         """
-        Genera nuevos datos normales a partir de la muestra filtrada.
+        Genera datos normales sintéticos a partir de la muestra filtrada.
 
         Usa regresión lineal para estimar Rainfall a partir de:
         - Temperature
         - Humidity
         - Soil_pH
-
-        Las demás columnas categóricas se copian desde registros reales.
         """
 
-        df = self.normal_data.copy()
-
-        print(f"Muestra normal encontrada: {len(df)} registros")
+        df = normal_data.copy()
 
         x = df[["Temperature", "Humidity", "Soil_pH"]]
         y = df["Rainfall"]
@@ -117,13 +156,11 @@ class WeatherSimulator:
 
             synthetic_rows.append(synthetic_row)
 
-        synthetic_df = pd.DataFrame(synthetic_rows)
-
-        return synthetic_df
+        return pd.DataFrame(synthetic_rows)
 
     def get_random_weather_row(self):
         """
-        Retorna una fila aleatoria del dataset sintético weather.
+        Retorna una fila aleatoria del dataset sintético.
         """
 
         random_index = random.randint(0, len(self.synthetic_data) - 1)
@@ -140,7 +177,7 @@ class WeatherSimulator:
             "parcel": parcel,
             "crop": crop,
             "simulator": "weather",
-            "crop_type_dataset": row.get("Crop_Type"),
+            "dataset_crop_reference": row.get("Crop_Type"),
             "soil_type": row.get("Soil_Type"),
             "temperature": round(float(row["Temperature"]), 2),
             "humidity": round(float(row["Humidity"]), 2),
@@ -153,10 +190,13 @@ class WeatherSimulator:
 
         return reading
 
-    def export_synthetic_dataset(self, output_path="weather_synthetic.csv"):
+    def export_synthetic_dataset(self, output_path=None):
         """
         Exporta el dataset sintético generado.
         """
+
+        if output_path is None:
+            output_path = self.synthetic_path
 
         self.synthetic_data.to_csv(output_path, index=False)
         print(f"Dataset sintético exportado en: {output_path}")
@@ -171,7 +211,3 @@ if __name__ == "__main__":
     )
 
     print(reading)
-
-    simulator.export_synthetic_dataset(
-        "Backend/DataAdquisition/weather_synthetic.csv"
-    )
