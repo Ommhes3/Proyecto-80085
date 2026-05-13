@@ -2,7 +2,7 @@ SENSOR_CONFIG = {
     "rice": {
         "temperature": {
             "sensor_type": "DHT22 / SHT31",
-            "unit": "°C",
+            "unit": "C",
             "sampling_interval_seconds": 60
         },
         "humidity": {
@@ -11,13 +11,13 @@ SENSOR_CONFIG = {
             "sampling_interval_seconds": 60
         },
         "rainfall": {
-            "sensor_type": "Pluviómetro",
-            "unit": "mm/día",
+            "sensor_type": "Pluviometro",
+            "unit": "mm/day",
             "sampling_interval_seconds": 300
         },
         "solar_radiation": {
             "sensor_type": "BH1750",
-            "unit": "W/m²",
+            "unit": "W/m2",
             "sampling_interval_seconds": 60
         },
         "soil_ph": {
@@ -30,7 +30,7 @@ SENSOR_CONFIG = {
     "sugar_cane": {
         "temperature": {
             "sensor_type": "DHT22 / SHT31",
-            "unit": "°C",
+            "unit": "C",
             "sampling_interval_seconds": 60
         },
         "humidity": {
@@ -40,7 +40,7 @@ SENSOR_CONFIG = {
         },
         "solar_radiation": {
             "sensor_type": "BH1750",
-            "unit": "W/m²",
+            "unit": "W/m2",
             "sampling_interval_seconds": 60
         },
         "soil_ph": {
@@ -49,7 +49,7 @@ SENSOR_CONFIG = {
             "sampling_interval_seconds": 1800
         },
         "wind_speed": {
-            "sensor_type": "Anemómetro",
+            "sensor_type": "Anemometro",
             "unit": "km/h",
             "sampling_interval_seconds": 30
         }
