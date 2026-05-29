@@ -1,0 +1,29 @@
+# Variables de entorno
+.env
+
+# Entornos virtuales de Python
+venv/
+.venv/
+env/
+ENV/
+
+# Cache de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos temporales de Python
+*.log
+*.tmp
+
+# Configuración local de editores
+.vscode/
+.idea/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Node/npm, si ya no se usa en el proyecto
+node_modules/
+package-lock.json
