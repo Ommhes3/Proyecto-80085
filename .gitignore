@@ -9,8 +9,8 @@ ENV/
 
 # Cache de Python
 __pycache__/
-*.py[cod]
-*$py.class
+*.pyc
+*.pyo
 
 # Archivos temporales de Python
 *.log
