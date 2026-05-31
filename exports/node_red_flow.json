@@ -1,0 +1,227 @@
+[
+    {
+        "id": "3948534897d4cf18",
+        "type": "tab",
+        "label": "Flujo 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "231c229e9e5cc8f6",
+        "type": "mqtt-broker",
+        "name": "Mosquitto Local",
+        "broker": "localhost",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "6fd3e18180b87c1d",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": 8086,
+        "protocol": "http",
+        "database": "database",
+        "name": "Version 2.0",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://localhost:8086",
+        "timeout": 10,
+        "rejectUnauthorized": false
+    },
+    {
+        "id": "0617033db86b5e1b",
+        "type": "mqtt in",
+        "z": "3948534897d4cf18",
+        "name": "",
+        "topic": "agricultura/sensores/#",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "231c229e9e5cc8f6",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 180,
+        "y": 340,
+        "wires": [
+            [
+                "51fbf8545b4c2c04"
+            ]
+        ]
+    },
+    {
+        "id": "51fbf8545b4c2c04",
+        "type": "json",
+        "z": "3948534897d4cf18",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 410,
+        "y": 340,
+        "wires": [
+            [
+                "7b21afbf52fc51bc"
+            ]
+        ]
+    },
+    {
+        "id": "7b21afbf52fc51bc",
+        "type": "function",
+        "z": "3948534897d4cf18",
+        "name": "Organizar JSON",
+        "func": "\nlet data = msg.payload;\n\n\nif (!data.parcel || !data.crop || !data.sensor || data.value === undefined) {\n    node.warn(\"Mensaje inválido: faltan campos obligatorios\");\n    return null;\n}\n\n\nlet numericValue = Number(data.value);\n\nif (isNaN(numericValue)) {\n    node.warn(\"Mensaje inválido: value no es numérico\");\n    return null;\n}\n\n\nlet status = \"normal\";\n\nif (data.alert === true) {\n    status = \"alert\";\n}\n\n\nmsg.payload = {\n    timestamp: data.timestamp,\n    parcel: data.parcel,\n    crop: data.crop,\n    zone: data.zone,\n    condition: data.condition,\n    simulator: data.simulator,\n\n    sensor: data.sensor,\n    sensor_type: data.sensor_type,\n    value: numericValue,\n    unit: data.unit,\n    sampling_interval_seconds: data.sampling_interval_seconds,\n\n    alert: data.alert,\n    status: status,\n\n    soil_type: data.soil_type,\n    dataset_crop_reference: data.dataset_crop_reference\n};\n\n\nmsg.topic = msg.topic;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 340,
+        "wires": [
+            [
+                "3cfa6e45fcc0ddc1",
+                "975fce030ad27221"
+            ]
+        ]
+    },
+    {
+        "id": "3cfa6e45fcc0ddc1",
+        "type": "switch",
+        "z": "3948534897d4cf18",
+        "name": "Clasificar estado",
+        "property": "payload.status",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "normal",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "alert",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1080,
+        "y": 340,
+        "wires": [
+            [
+                "c980281404733458"
+            ],
+            [
+                "6fd264b368e05b30"
+            ]
+        ]
+    },
+    {
+        "id": "c980281404733458",
+        "type": "debug",
+        "z": "3948534897d4cf18",
+        "name": "Debug datos normales",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1320,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "6fd264b368e05b30",
+        "type": "debug",
+        "z": "3948534897d4cf18",
+        "name": "Debug alertas",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1300,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "975fce030ad27221",
+        "type": "function",
+        "z": "3948534897d4cf18",
+        "name": "Preparar InfluxDB",
+        "func": "let data = msg.payload;\n\n// Validación mínima\nif (!data.parcel || !data.crop || !data.sensor || data.value === undefined) {\n    node.warn(\"Dato inválido para InfluxDB\");\n    return null;\n}\n\nlet numericValue = Number(data.value);\n\nif (isNaN(numericValue)) {\n    node.warn(\"Dato inválido: value no es numérico\");\n    return null;\n}\n\n// Función para clasificar el tipo de alerta\nfunction getAlertInfo(crop, sensor, value) {\n    let alertType = \"none\";\n    let alertDescription = \"Sin alerta\";\n    let alertLevel = \"normal\";\n\n    if (crop === \"rice\") {\n        if (sensor === \"temperature\") {\n            if (value < 20) {\n                alertType = \"low_temperature\";\n                alertDescription = \"Arroz con temperatura baja\";\n                alertLevel = \"critical\";\n            } else if (value > 35) {\n                alertType = \"high_temperature\";\n                alertDescription = \"Arroz con temperatura alta\";\n                alertLevel = \"critical\";\n            }\n        }\n\n        if (sensor === \"humidity\") {\n            if (value < 55) {\n                alertType = \"low_humidity\";\n                alertDescription = \"Arroz con humedad baja\";\n                alertLevel = \"critical\";\n            } else if (value > 95) {\n                alertType = \"high_humidity\";\n                alertDescription = \"Arroz con humedad alta\";\n                alertLevel = \"critical\";\n            }\n        }\n\n        if (sensor === \"rainfall\") {\n            if (value < 2) {\n                alertType = \"low_rainfall\";\n                alertDescription = \"Arroz con baja precipitación\";\n                alertLevel = \"critical\";\n            } else if (value > 70) {\n                alertType = \"high_rainfall\";\n                alertDescription = \"Arroz con exceso de precipitación\";\n                alertLevel = \"critical\";\n            }\n        }\n\n        if (sensor === \"solar_radiation\") {\n            if (value < 250) {\n                alertType = \"low_solar_radiation\";\n                alertDescription = \"Arroz con baja radiación solar\";\n                alertLevel = \"critical\";\n            }\n        }\n\n        if (sensor === \"soil_ph\") {\n            if (value < 5.5) {\n                alertType = \"low_soil_ph\";\n                alertDescription = \"Arroz con pH del suelo bajo\";\n                alertLevel = \"critical\";\n            } else if (value > 7.5) {\n                alertType = \"high_soil_ph\";\n                alertDescription = \"Arroz con pH del suelo alto\";\n                alertLevel = \"critical\";\n            }\n        }\n    }\n\n    if (crop === \"sugar_cane\") {\n        if (sensor === \"temperature\") {\n            if (value < 18) {\n                alertType = \"low_temperature\";\n                alertDescription = \"Caña de azúcar con temperatura baja\";\n                alertLevel = \"critical\";\n            } else if (value > 35) {\n                alertType = \"high_temperature\";\n                alertDescription = \"Caña de azúcar con temperatura alta\";\n                alertLevel = \"critical\";\n            }\n        }\n\n        if (sensor === \"humidity\") {\n            if (value < 50) {\n                alertType = \"low_humidity\";\n                alertDescription = \"Caña de azúcar con humedad baja\";\n                alertLevel = \"critical\";\n            } else if (value > 92) {\n                alertType = \"high_humidity\";\n                alertDescription = \"Caña de azúcar con humedad alta\";\n                alertLevel = \"critical\";\n            }\n        }\n\n        if (sensor === \"solar_radiation\") {\n            if (value < 250) {\n                alertType = \"low_solar_radiation\";\n                alertDescription = \"Caña de azúcar con baja radiación solar\";\n                alertLevel = \"critical\";\n            }\n        }\n\n        if (sensor === \"soil_ph\") {\n            if (value < 5.5) {\n                alertType = \"low_soil_ph\";\n                alertDescription = \"Caña de azúcar con pH del suelo bajo\";\n                alertLevel = \"critical\";\n            } else if (value > 7.5) {\n                alertType = \"high_soil_ph\";\n                alertDescription = \"Caña de azúcar con pH del suelo alto\";\n                alertLevel = \"critical\";\n            }\n        }\n\n        if (sensor === \"wind_speed\") {\n            if (value > 20) {\n                alertType = \"high_wind_speed\";\n                alertDescription = \"Caña de azúcar con velocidad de viento elevada\";\n                alertLevel = \"critical\";\n            }\n        }\n    }\n\n    return {\n        alertType,\n        alertDescription,\n        alertLevel\n    };\n}\n\nlet alertInfo = getAlertInfo(\n    String(data.crop),\n    String(data.sensor),\n    numericValue\n);\n\n// Fields: valores numéricos guardados como datos\nlet fields = {\n    value: numericValue,\n    alert: data.alert ? 1 : 0,\n    sampling_interval_seconds: Number(data.sampling_interval_seconds)\n};\n\n// Tags: sirven para filtrar en InfluxDB y Grafana\nlet tags = {\n    parcel: String(data.parcel),\n    crop: String(data.crop),\n    zone: String(data.zone),\n    sensor: String(data.sensor),\n    sensor_type: String(data.sensor_type),\n    condition: String(data.condition),\n    simulator: String(data.simulator),\n    status: String(data.status),\n    unit: String(data.unit),\n\n    // Nuevos tags para el historial de alertas\n    alert_type: String(alertInfo.alertType),\n    alert_description: String(alertInfo.alertDescription),\n    alert_level: String(alertInfo.alertLevel)\n};\n\n// Formato recomendado para influxdb out:\n// [fields, tags]\nmsg.payload = [fields, tags];\n\n// Timestamp en milisegundos\nmsg.timestamp = new Date(data.timestamp).getTime();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 220,
+        "wires": [
+            [
+                "65f8398d706d50e4"
+            ]
+        ]
+    },
+    {
+        "id": "65f8398d706d50e4",
+        "type": "influxdb out",
+        "z": "3948534897d4cf18",
+        "influxdb": "6fd3e18180b87c1d",
+        "name": "Version: 2.0",
+        "measurement": "sensor_readings",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "agro-iot",
+        "bucket": "sensor_data",
+        "x": 1070,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "e53f81f1046ea90e",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-influxdb": "0.7.0"
+        }
+    }
+]

@@ -1,0 +1,741 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "ad27f78",
+    "generation": 49,
+    "creationTimestamp": "2026-05-27T05:33:20Z",
+    "labels": {},
+    "annotations": {}
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "spec": {},
+            "labels": {
+              "grafana.app/export-label": "grafana-1"
+            }
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true
+        }
+      }
+    ],
+    "cursorSync": "Off",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Parcelas activas",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "spec": {
+                        "query": "from(bucket: \"sensor_data\")\r\n  |> range(start: -1d)\r\n  |> filter(fn: (r) => r._measurement == \"sensor_readings\")\r\n  |> filter(fn: (r) => r._field == \"value\")\r\n  |> filter(fn: (r) => exists r.parcel)\r\n  |> filter(fn: (r) => exists r.crop)\r\n  |> group(columns: [\"parcel\", \"crop\"])\r\n  |> last()\r\n  |> group()\r\n  |> map(fn: (r) => ({\r\n      Parcela: r.parcel,\r\n      Cultivo: r.crop,\r\n      Ver_arroz: if r.crop == \"rice\" then \"Abrir\" else \"\",\r\n      Ver_cana: if r.crop == \"sugar_cane\" then \"Abrir\" else \"\"\r\n  }))\r\n  |> keep(columns: [\"Parcela\", \"Cultivo\", \"Ver_arroz\", \"Ver_cana\"])\r\n  |> sort(columns: [\"Parcela\"])"
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "influxdb-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "excludeByName": {},
+                      "includeByName": {},
+                      "indexByName": {
+                        "Cultivo": 1,
+                        "Parcela": 0,
+                        "Ver_arroz": 2,
+                        "Ver_cana": 3
+                      },
+                      "renameByName": {
+                        "Ver_arroz": "¿Es arroz?",
+                        "Ver_cana": "¿Es caña?",
+                        "crop": "Cultivo",
+                        "parcel": "Parcela"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.1+security-01",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "scope": "series",
+                      "options": "Ver_arroz"
+                    },
+                    "properties": [
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "targetBlank": false,
+                            "title": "Ver detalle arroz",
+                            "url": "http://localhost:3000/d/ad9sl5p/dashboard3a-detalles-por-parcela-solo-arroz?orgId=1&var-parcel=${__data.fields.Parcela}"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "scope": "series",
+                      "options": "Ver_cana"
+                    },
+                    "properties": [
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "targetBlank": false,
+                            "title": "Ver detalle caña",
+                            "url": "/d/advphcd/7d35098?orgId=1&var-parcel=${__data.fields.Parcela}"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "Dashboard Principal",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "13.0.1+security-01",
+            "spec": {
+              "options": {
+                "code": {
+                  "language": "plaintext",
+                  "showLineNumbers": false,
+                  "showMiniMap": false
+                },
+                "content": "<div style=\"text-align:center; margin-top:10px;\">\n  <a href=\"/d/adjb95v/dashboard-principal?orgId=1&from=now-3h&to=now&timezone=browser\"\n     style=\"\n       display:inline-block;\n       padding:12px 22px;\n       background:#1f2937;\n       color:white;\n       text-decoration:none;\n       border-radius:10px;\n       font-weight:600;\n       font-size:15px;\n       box-shadow:0 4px 10px rgba(0,0,0,0.25);\n     \">\n    ⬅ Volver al dashboard principal\n  </a>\n</div>",
+                "mode": "html"
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "Temperatura por parcelas",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "spec": {
+                        "query": "from(bucket: \"sensor_data\")\r\n  |> range(start: -1d)\r\n  |> filter(fn: (r) => r._measurement == \"sensor_readings\")\r\n  |> filter(fn: (r) => r._field == \"value\")\r\n  |> filter(fn: (r) => r.sensor == \"temperature\")\r\n  |> group(columns: [\"parcel\", \"crop\"])\r\n  |> last()\r\n  |> group()\r\n  |> map(fn: (r) => ({\r\n      fila: \"actual\",\r\n      label: r.parcel + \" | \" + r.crop,\r\n      _value: r._value\r\n  }))\r\n  |> pivot(\r\n      rowKey: [\"fila\"],\r\n      columnKey: [\"label\"],\r\n      valueColumn: \"_value\"\r\n  )\r\n  |> drop(columns: [\"fila\"])"
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "influxdb-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "bargauge",
+            "version": "13.0.1+security-01",
+            "spec": {
+              "options": {
+                "displayMode": "gradient",
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": false
+                },
+                "maxVizHeight": 300,
+                "minVizHeight": 16,
+                "minVizWidth": 8,
+                "namePlacement": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "/.*/",
+                  "values": true
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "text": {
+                  "valueSize": 14
+                },
+                "valueMode": "text"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "celsius",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "continuous-reds",
+                    "fixedColor": "semi-dark-blue"
+                  },
+                  "fieldMinMax": false
+                },
+                "overrides": []
+              }
+            }
+          },
+          "transparent": true
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "Humedad por parcelas",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "spec": {
+                        "query": "from(bucket: \"sensor_data\")\r\n  |> range(start: -1d)\r\n  |> filter(fn: (r) => r._measurement == \"sensor_readings\")\r\n  |> filter(fn: (r) => r._field == \"value\")\r\n  |> filter(fn: (r) => r.sensor == \"humidity\")\r\n  |> group(columns: [\"parcel\", \"crop\"])\r\n  |> last()\r\n  |> group()\r\n  |> map(fn: (r) => ({\r\n      fila: \"actual\",\r\n      label: r.parcel + \" | \" + r.crop,\r\n      _value: r._value\r\n  }))\r\n  |> pivot(\r\n      rowKey: [\"fila\"],\r\n      columnKey: [\"label\"],\r\n      valueColumn: \"_value\"\r\n  )\r\n  |> drop(columns: [\"fila\"])"
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "influxdb-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "bargauge",
+            "version": "13.0.1+security-01",
+            "spec": {
+              "options": {
+                "displayMode": "gradient",
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": false
+                },
+                "maxVizHeight": 300,
+                "minVizHeight": 16,
+                "minVizWidth": 8,
+                "namePlacement": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "/.*/",
+                  "values": true
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "text": {
+                  "valueSize": 14
+                },
+                "valueMode": "text"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "humidity",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "continuous-cividis"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          },
+          "transparent": true
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "pH por parcelas",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "spec": {
+                        "query": "from(bucket: \"sensor_data\")\r\n  |> range(start: -1d)\r\n  |> filter(fn: (r) => r._measurement == \"sensor_readings\")\r\n  |> filter(fn: (r) => r._field == \"value\")\r\n  |> filter(fn: (r) => r.sensor == \"soil_ph\")\r\n  |> group(columns: [\"parcel\", \"crop\"])\r\n  |> last()\r\n  |> group()\r\n  |> map(fn: (r) => ({\r\n      fila: \"actual\",\r\n      label: r.parcel + \" | \" + r.crop,\r\n      _value: r._value\r\n  }))\r\n  |> pivot(\r\n      rowKey: [\"fila\"],\r\n      columnKey: [\"label\"],\r\n      valueColumn: \"_value\"\r\n  )\r\n  |> drop(columns: [\"fila\"])"
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "influxdb-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "bargauge",
+            "version": "13.0.1+security-01",
+            "spec": {
+              "options": {
+                "displayMode": "gradient",
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": false
+                },
+                "maxVizHeight": 300,
+                "minVizHeight": 16,
+                "minVizWidth": 8,
+                "namePlacement": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "/.*/",
+                  "values": true
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "text": {
+                  "valueSize": 14
+                },
+                "valueMode": "text"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "continuous-magma"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          },
+          "transparent": true
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "Radiacion solar por parcelas",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "spec": {
+                        "query": "from(bucket: \"sensor_data\")\r\n  |> range(start: -1d)\r\n  |> filter(fn: (r) => r._measurement == \"sensor_readings\")\r\n  |> filter(fn: (r) => r._field == \"value\")\r\n  |> filter(fn: (r) => r.sensor == \"solar_radiation\")\r\n  |> group(columns: [\"parcel\", \"crop\"])\r\n  |> last()\r\n  |> group()\r\n  |> map(fn: (r) => ({\r\n      fila: \"actual\",\r\n      label: r.parcel + \" | \" + r.crop,\r\n      _value: r._value\r\n  }))\r\n  |> pivot(\r\n      rowKey: [\"fila\"],\r\n      columnKey: [\"label\"],\r\n      valueColumn: \"_value\"\r\n  )\r\n  |> drop(columns: [\"fila\"])"
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "influxdb-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "bargauge",
+            "version": "13.0.1+security-01",
+            "spec": {
+              "options": {
+                "displayMode": "gradient",
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": false
+                },
+                "maxVizHeight": 300,
+                "minVizHeight": 16,
+                "minVizWidth": 8,
+                "namePlacement": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "/.*/",
+                  "values": true
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "text": {
+                  "valueSize": 14
+                },
+                "valueMode": "text"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "W/m²",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "continuous-purples"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          },
+          "transparent": true
+        }
+      }
+    },
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": [
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 3,
+              "y": 0,
+              "width": 4,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-3"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 7,
+              "y": 0,
+              "width": 12,
+              "height": 13,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-1"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 13,
+              "width": 12,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-4"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 12,
+              "y": 13,
+              "width": 12,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-7"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 21,
+              "width": 12,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-6"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 12,
+              "y": 21,
+              "width": 12,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-5"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [],
+    "liveNow": false,
+    "preload": false,
+    "tags": [],
+    "timeSettings": {
+      "timezone": "browser",
+      "from": "now-6h",
+      "to": "now",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "Dashboard de parcelas",
+    "variables": [
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "parcel",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "label": "Parcela",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "influxdb",
+            "version": "v0",
+            "spec": {
+              "query": "from(bucket: \"sensor_data\")\r\n  |> range(start: -30d)\r\n  |> filter(fn: (r) => r._measurement == \"sensor_readings\")\r\n  |> filter(fn: (r) => r._field == \"value\")\r\n  |> filter(fn: (r) => exists r.parcel)\r\n  |> group(columns: [\"parcel\"])\r\n  |> last()\r\n  |> group()\r\n  |> keep(columns: [\"parcel\"])\r\n  |> sort(columns: [\"parcel\"])"
+            },
+            "labels": {
+              "grafana.app/export-label": "influxdb-1"
+            }
+          },
+          "regex": "",
+          "regexApplyTo": "value",
+          "sort": "disabled",
+          "definition": "from(bucket: \"sensor_data\")\r\n  |> range(start: -30d)\r\n  |> filter(fn: (r) => r._measurement == \"sensor_readings\")\r\n  |> filter(fn: (r) => r._field == \"value\")\r\n  |> filter(fn: (r) => exists r.parcel)\r\n  |> group(columns: [\"parcel\"])\r\n  |> last()\r\n  |> group()\r\n  |> keep(columns: [\"parcel\"])\r\n  |> sort(columns: [\"parcel\"])",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": true
+        }
+      }
+    ],
+    "preferences": {
+      "layout": {
+        "kind": "GridLayout",
+        "spec": {
+          "items": []
+        }
+      }
+    }
+  }
+}
