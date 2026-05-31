@@ -1,0 +1,8 @@
+pandas
+numpy
+scikit-learn
+kagglehub
+paho-mqtt
+influxdb-client
+joblib
+python-dotenv

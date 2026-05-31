@@ -14,5 +14,16 @@ services:
       DOCKER_INFLUXDB_INIT_BUCKET: sensor_data
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: agro-token-123
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_agriculture
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - influxdb
+
 volumes:
   influxdb_data:
+  grafana_data:
